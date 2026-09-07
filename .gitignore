@@ -1,0 +1,11 @@
+# 编译产物
+out/
+# 数据库文件（H2 单文件库 + 锁/日志）
+data/*.mv.db
+data/*.trace.db
+data/*.lock.db
+# 导出与备份
+data/*.csv
+*.csv
+# 临时文件
+*.tmp
