@@ -60,15 +60,15 @@ rem ---- 第 2 步：编译 core + gui（javac 直编，含复制 CSS 资源）----
 echo [3/6] 编译 core + gui ...
 call scripts\build-gui.bat || (echo [失败] 编译失败 & exit /b 1)
 
-rem ---- 第 3 步：收集打包输入（scoring-gui.jar + h2 驱动）----
+rem ---- 第 3 步：收集打包输入（scoring-gui.jar + 全部运行时 jar：H2 + POI 系）----
 echo [4/6] 组装应用 jar...
 if exist "%ROOT%\dist-pkg" rmdir /s /q "%ROOT%\dist-pkg"
 mkdir "%ROOT%\dist-pkg"
 jar --create --file "%ROOT%\dist-pkg\scoring-gui.jar" --main-class scoring.gui.Main -C out .
 if errorlevel 1 (echo [失败] jar 打包失败 & exit /b 1)
-copy /y "%ROOT%\lib\h2-2.2.224.jar" "%ROOT%\dist-pkg\" >nul
-if errorlevel 1 (echo [失败] 复制 H2 失败 & exit /b 1)
-echo        输入目录 dist-pkg\ ：scoring-gui.jar + h2-2.2.224.jar
+for %%j in ("%ROOT%\lib\*.jar") do copy /y "%%j" "%ROOT%\dist-pkg\" >nul
+if errorlevel 1 (echo [失败] 复制运行时依赖 jar 失败 & exit /b 1)
+echo        输入目录 dist-pkg\ ：scoring-gui.jar + lib\*.jar（H2 + POI 12 个）
 
 rem ---- 第 4 步：WiX 工具（jpackage 生成 exe 安装器必需；缺失时自动下载到 lib\wix3）----
 if not exist "%WIX%\light.exe" (
