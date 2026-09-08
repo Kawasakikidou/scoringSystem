@@ -9,3 +9,8 @@ data/*.csv
 *.csv
 # 临时文件
 *.tmp
+# JavaFX SDK（体积大，由 scripts/fetch-gui-libs.sh(.bat) 按需下载）
+lib/openjfx-17/
+# 打包产物（jpackage 安装器/镜像与打包用临时目录）
+dist/
+dist-pkg/

@@ -1,0 +1,265 @@
+/* 学生组织面试评分系统 GUI —— 现代浅色主题（基于 Modena 定制）
+   圆角卡片 / 状态色徽标 / 统一字体 / 柔和阴影 */
+
+.root {
+    -fx-font-family: "Segoe UI", "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", "Source Han Sans SC", sans-serif;
+    -fx-font-size: 14px;
+}
+
+.app-root {
+    -fx-background-color: #f4f6fb;
+}
+
+/* ---------- 顶栏 ---------- */
+.top-bar {
+    -fx-background-color: linear-gradient(to right, #3d5af1, #5b8cff);
+    -fx-padding: 14px 22px;
+}
+.app-title {
+    -fx-text-fill: white;
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+}
+.db-path {
+    -fx-text-fill: rgba(255, 255, 255, 0.75);
+    -fx-font-size: 11px;
+}
+
+/* ---------- 侧栏导航 ---------- */
+.sidebar {
+    -fx-background-color: #ffffff;
+    -fx-padding: 16px 10px;
+    -fx-pref-width: 168px;
+    -fx-border-color: transparent #e4e8f2 transparent transparent;
+    -fx-border-width: 0 1 0 0;
+}
+.nav-btn {
+    -fx-background-color: transparent;
+    -fx-text-fill: #4a5568;
+    -fx-alignment: CENTER_LEFT;
+    -fx-padding: 10px 14px;
+    -fx-background-radius: 10px;
+    -fx-font-size: 14px;
+    -fx-cursor: hand;
+}
+.nav-btn:hover {
+    -fx-background-color: #eef2ff;
+}
+.nav-btn:selected {
+    -fx-background-color: #3d5af1;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
+.nav-danger {
+    -fx-text-fill: #c53030;
+}
+.nav-danger:hover {
+    -fx-background-color: #fff5f5;
+}
+.sidebar-sep {
+    -fx-padding: 6px 4px;
+}
+
+/* ---------- 页面骨架 ---------- */
+.page {
+    -fx-background-color: #f4f6fb;
+}
+.page-header {
+    -fx-padding: 20px 24px 4px 24px;
+}
+.page-title {
+    -fx-font-size: 22px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #1a202c;
+}
+.page-subtitle {
+    -fx-text-fill: #718096;
+    -fx-font-size: 13px;
+}
+
+/* ---------- 卡片 ---------- */
+.card {
+    -fx-background-color: white;
+    -fx-background-radius: 14px;
+    -fx-padding: 18px;
+    -fx-effect: dropshadow(gaussian, rgba(30, 41, 59, 0.08), 14, 0, 0, 3);
+}
+.card-title {
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2d3748;
+}
+.result-card {
+    -fx-border-color: #c6f6d5;
+    -fx-border-radius: 14px;
+    -fx-border-width: 1.5px;
+}
+
+/* ---------- 统计卡 ---------- */
+.stat-card {
+    -fx-min-height: 110px;
+}
+.stat-title {
+    -fx-text-fill: #718096;
+    -fx-font-size: 13px;
+}
+.stat-value {
+    -fx-font-size: 30px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #1a202c;
+}
+.stat-hint {
+    -fx-text-fill: #a0aec0;
+    -fx-font-size: 11px;
+}
+.stat-total .stat-value { -fx-text-fill: #2b6cb0; }
+.stat-pending .stat-value { -fx-text-fill: #b7791f; }
+.stat-interviewing .stat-value { -fx-text-fill: #3d5af1; }
+.stat-finished .stat-value { -fx-text-fill: #2f855a; }
+
+.resume-card {
+    -fx-background-color: #fff8e6;
+    -fx-border-color: #f6d365;
+    -fx-border-radius: 14px;
+    -fx-border-width: 1.5px;
+}
+.resume-text {
+    -fx-text-fill: #975a16;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+}
+
+/* ---------- 状态徽标 ---------- */
+.badge {
+    -fx-padding: 3px 12px;
+    -fx-background-radius: 999px;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+.badge-pending {
+    -fx-background-color: #fef3c7;
+    -fx-text-fill: #92400e;
+}
+.badge-interviewing {
+    -fx-background-color: #dbeafe;
+    -fx-text-fill: #1d4ed8;
+}
+.badge-finished {
+    -fx-background-color: #d1fae5;
+    -fx-text-fill: #047857;
+}
+
+/* ---------- 按钮 ---------- */
+.button {
+    -fx-background-radius: 9px;
+    -fx-cursor: hand;
+    -fx-padding: 8px 16px;
+    -fx-font-size: 13px;
+}
+.button-primary {
+    -fx-background-color: #3d5af1;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
+.button-primary:hover {
+    -fx-background-color: #2f49c6;
+}
+.button-secondary {
+    -fx-background-color: #edf1f7;
+    -fx-text-fill: #2d3748;
+}
+.button-secondary:hover {
+    -fx-background-color: #dbe4f0;
+}
+.button-success {
+    -fx-background-color: #2f855a;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
+.button-success:hover {
+    -fx-background-color: #276749;
+}
+.button-danger {
+    -fx-background-color: #c53030;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
+.button-danger:hover {
+    -fx-background-color: #9b2c2c;
+}
+.button-link {
+    -fx-background-color: transparent;
+    -fx-text-fill: #718096;
+}
+.button-link:hover {
+    -fx-text-fill: #3d5af1;
+}
+
+/* ---------- 输入与表格 ---------- */
+.text-field {
+    -fx-background-radius: 9px;
+    -fx-border-radius: 9px;
+    -fx-border-color: #d5dce8;
+    -fx-padding: 8px 12px;
+}
+.text-field:focused {
+    -fx-border-color: #3d5af1;
+}
+.table-view {
+    -fx-background-color: white;
+    -fx-background-radius: 12px;
+    -fx-border-color: #e4e8f2;
+    -fx-border-radius: 12px;
+}
+.table-view .column-header-background {
+    -fx-background-color: #eef2fa;
+    -fx-background-radius: 12px 12px 0 0;
+}
+.table-view .column-header {
+    -fx-background-color: transparent;
+    -fx-padding: 8px;
+}
+.table-view .column-header .label {
+    -fx-text-fill: #4a5568;
+    -fx-font-weight: bold;
+    -fx-font-size: 13px;
+}
+.table-row-cell:odd {
+    -fx-background-color: #fafbff;
+}
+.table-row-cell:selected {
+    -fx-background-color: #dbe6ff;
+    -fx-text-background-color: #1a202c;
+}
+
+/* ---------- 文本 ---------- */
+.hint-text {
+    -fx-text-fill: #718096;
+    -fx-font-size: 12px;
+}
+.status-ok {
+    -fx-text-fill: #2f855a;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+}
+.final-score {
+    -fx-text-fill: #c53030;
+    -fx-font-size: 30px;
+    -fx-font-weight: bold;
+}
+.search-bar {
+    -fx-padding: 2px 0;
+}
+
+/* ---------- 对话框 ---------- */
+.dialog-pane {
+    -fx-background-color: white;
+    -fx-background-radius: 14px;
+}
+.dialog-pane .header-panel {
+    -fx-background-color: #f7f9fd;
+}
+.dialog-pane .header-panel .label {
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+}
