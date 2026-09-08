@@ -144,3 +144,17 @@ java -Dfile.encoding=UTF-8 --module-path lib/openjfx-17/linux/lib \
 |---|---|
 | `samples/名单样例-规整.txt` | 成功 8 行（新增 8）/ 跳过 0 |
 | `samples/名单样例-乱序.txt` | 成功 10 行（新增 9、更新 1）/ 跳过 3（手机号行、18 位连写学号行、无学号行） |
+
+## 许可证
+
+[![License: CC BY 3.0](https://licensebuttons.net/l/by/3.0/80x15.png)](https://creativecommons.org/licenses/by/3.0/)
+
+本仓库（代码、文档、脚本、图标与样例）以 **知识共享署名 3.0 未本地化**
+（[Creative Commons Attribution 3.0 Unported](https://creativecommons.org/licenses/by/3.0/)）
+发布，全文见根目录 [`LICENSE`](LICENSE)。
+
+- **署名要求**：以任何方式使用/修改/再分发时，须注明原作者与来源链接，例如：
+  © 2026 Kawasakikidou（[scoringSystem](https://github.com/Kawasakikidou/scoringSystem)，
+  liweiheng@mails.gdut.edu.cn），并说明是否对作品做了修改（CC BY 3.0 条款）；
+- 可自由使用/修改/商用，条件即上述"署名 + 注明修改"；
+- 样例名单为虚构数据，仅作验收用途。
