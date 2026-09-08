@@ -11,6 +11,5 @@ data/*.csv
 *.tmp
 # JavaFX SDK（体积大，由 scripts/fetch-gui-libs.sh(.bat) 按需下载）
 lib/openjfx-17/
-# 打包产物（jpackage 安装器/镜像与打包用临时目录）
-dist/
+# 打包用临时输入目录（jpackage 输入 staging，不入库；dist/ 为发布产物，随 Release 一起入库）
 dist-pkg/

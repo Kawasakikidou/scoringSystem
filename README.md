@@ -62,19 +62,43 @@ Windows：`scripts\fetch-gui-libs.bat` → `scripts\build-gui.bat` → `scripts\
 > ⚠ **GUI 与 CLI 共用同一数据库（`data/scoring.mv.db`），单进程单实例**：
 > 数据互通，但同一时刻只能运行其中一个程序，先退出一个再开另一个。
 
-## 打包为 Windows exe（无黑框安装器）
+## 发布（Release）产物
 
-打包必须在 Windows 机器上执行（需要完整版 JDK 17，含 `jpackage`）：
+`dist/` 保存随 GitHub Release 一同发布的产物（随仓库入库，更新版本时重新生成）：
+
+| 文件 | 说明 | 重新生成 |
+|---|---|---|
+| `dist/ScoringGUI-win-package.zip` | **Windows 一键打包源包**：源码+脚本+文档+样例+H2 驱动（60 余项，约 3 MB） | `bash scripts/package-source.sh` |
+| `dist/ScoringGUI-1.0.0.exe` | Windows 无黑框安装器（**在 Windows 打包机上**由下面命令生成后放入 `dist/` 提交/挂附件） | `scripts\package-win.bat` |
 
 ```
-scripts\package-win.bat      # 一键：检查环境 → 自动下载组件 → 编译 → jpackage → dist\ScoringGUI-1.0.0.exe
+# 1) Linux/macOS：重新生成 Windows 源包（已含最新文档/源码）
+bash scripts/package-source.sh
+
+# 2) Windows 打包机：解压源包 → 装 JDK17 → （进阶）新增/更新版本后
+scripts\package-win.bat      # 自动：检查环境→下载组件→编译→jpackage→dist\ScoringGUI-1.0.0.exe
 ```
 
-- 也可双击运行；`dist\ScoringGUI-win-package.zip`（Linux/macOS 上由
-  `bash scripts/package-source.sh` 或手工生成）为「Windows 拿到即可打包」的一键源包；
-- 完整说明见 `docs/GUI打包指南-win.md`；打包参数与原理见《接口文档》§7.4。
+- 打包必须在 Windows 机器上执行（需要**完整版** JDK 17，含 `jpackage`）；
+- 完整说明见 `docs/GUI打包指南-win.md`；打包参数与原理见《接口文档》§7.4；
 - 数据位置：默认「启动目录/data/」；装在 Program Files 等不可写目录时自动回退
   「用户主目录\.scoring-gui\data\」。
+
+### 打 GitHub Release（计划动作，命令含 gh 或网页操作）
+
+```bash
+# 方式一：命令行（须安装 gh 并登录）
+gh release create v1.0.0 --title "v1.0.0 — GUI 前端与 Win 安装器" \
+  --notes "学生组织面试评分系统 GUI（JavaFX 17）+ Windows 安装器源包" \
+  "dist/ScoringGUI-win-package.zip"
+
+# 之后拿到 Windows 上产出的 ScoringGUI-1.0.0.exe 可再上传到同一 Release：
+gh release upload v1.0.0 dist/ScoringGUI-1.0.0.exe
+```
+
+方式二（网页）：GitHub 仓库 → Releases → New release → 输入 Tag `v1.0.0` →
+拖入 `dist/ScoringGUI-win-package.zip`（及 Windows 产出的 `ScoringGUI-1.0.0.exe`）→ Publish。
+最终用户会看到顺序：**先按序号下载「源包/安装器」→ 安装/打包 → 读 `docs/GUI使用说明.md`**。
 
 也可以手工编译（验收方式，JDK 17）：
 
