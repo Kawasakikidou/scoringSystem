@@ -13,3 +13,4 @@ data/*.csv
 lib/openjfx-17/
 # 打包用临时输入目录（jpackage 输入 staging，不入库；dist/ 为发布产物，随 Release 一起入库）
 dist-pkg/
+dist/
