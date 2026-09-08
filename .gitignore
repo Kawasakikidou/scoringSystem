@@ -17,3 +17,5 @@ dist-pkg/
 dist/
 # WiX 工具集（由 scripts/package-win.bat 自动下载到 lib\wix3）
 lib/wix3/
+# Python 虚拟环境（装配 venv 用；acceptance/self-test 自动优先使用）
+.venv/

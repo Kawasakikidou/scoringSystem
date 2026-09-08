@@ -48,11 +48,14 @@ final class RosterParser {
     record Entry(String name, String studentNo) {
     }
 
-    /** 整个文件的解析结果。 */
+    /** 整个文件/电子表格的解析结果。 */
     record Parsed(List<Entry> entries, int skippedCount, List<String> skippedSamples, String encodingName) {
     }
 
-    /** 读取并解析名单文件；编码自动探测（UTF-8 BOM → UTF-8 → GB18030 → ISO-8859-1 兜底）。 */
+    /**
+     * 读取并解析文本名单文件；编码自动探测（UTF-8 BOM → UTF-8 → GB18030 → ISO-8859-1 兜底）。
+     * Excel 文件由 ExcelRosterReader 先行转为行文本后调用 {@link #parseLines}，不经过本方法。
+     */
     static Parsed parse(Path file) throws IOException {
         byte[] bytes = Files.readAllBytes(file);
         int offset = 0;
@@ -71,7 +74,11 @@ final class RosterParser {
             text = decodeStrict(bytes, offset, Charset.forName("ISO-8859-1"));
             encodingName = "ISO-8859-1(无法识别编码，按单字节读出)";
         }
-        return splitLines(text, encodingName);
+        List<String> lines = new ArrayList<>();
+        for (String raw : text.split("\\R", -1)) {
+            lines.add(raw);
+        }
+        return parseLines(lines, encodingName);
     }
 
     /** 严格解码；失败返回 null（不静默产生乱码）。 */
@@ -87,16 +94,19 @@ final class RosterParser {
         }
     }
 
-    private static Parsed splitLines(String text, String encoding) {
-        String[] lines = text.split("\\R", -1);
+    /**
+     * 对“一行一人”的行文本列表执行统一解析管线（文本文件按行拆分后、Excel 按
+     * “行内单元格以 Tab 拼接”后，都汇聚到这里；表头跳过/坏行统计/幂等等口径完全一致）。
+     */
+    static Parsed parseLines(List<String> rawLines, String encodingName) {
         List<Entry> entries = new ArrayList<>();
         List<String> samples = new ArrayList<>();
         int skippedCount = 0;
         boolean dataZoneStarted = false;
         boolean anyParsed = false;
         List<String> headerBlock = new ArrayList<>();
-        for (String raw : lines) {
-            String line = raw.trim();
+        for (String raw : rawLines) {
+            String line = raw == null ? "" : raw.trim();
             if (line.isEmpty()) {
                 continue;
             }
@@ -113,7 +123,7 @@ final class RosterParser {
                     samples.add(truncate(line, 60));
                 }
             } else {
-                // 题头/表头区（首个可解析行之前）：暂存；若全文件都不可解析则全部计入跳过
+                // 题头/表头区（首个可解析行之前）：暂存；若全部不可解析则计入跳过
                 headerBlock.add(line);
             }
         }
@@ -125,7 +135,7 @@ final class RosterParser {
                 }
             }
         }
-        return new Parsed(entries, skippedCount, samples, encoding);
+        return new Parsed(entries, skippedCount, samples, encodingName);
     }
 
     /**
@@ -174,5 +184,11 @@ final class RosterParser {
 
     private static String truncate(String s, int max) {
         return s.length() <= max ? s : s.substring(0, max) + "…";
+    }
+
+    /** 手动名单维护用：姓名必须为一条完整汉字链（≥2 字、≤64 字，可含 ·・•． 连接段）。 */
+    static boolean isValidName(String name) {
+        return name != null && name.length() >= 2 && name.length() <= 64
+                && NAME_CHAIN.matcher(name).matches();
     }
 }

@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-# 全量编译：先单独编译 core（自证 core 无任何 cli/UI 依赖），再编译 cli
+# 全量编译（二期：POI 5.x 进 core，classpath 需含 lib/*）
+#   第 1 步：core 独立编译（classpath 仅 lib/* 的第三方库，不含任何 GUI/CLI 依赖 → 自证分层）
+#   第 2 步：core + cli 全量编译
 set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 OUT="$ROOT/out"
@@ -10,14 +12,14 @@ mkdir -p "$CORE_OUT" "$OUT"
 CORE_SRCS=$(find "$ROOT/src/core/java" -name '*.java' | sort)
 CLI_SRCS=$(find "$ROOT/src/cli/java" -name '*.java' | sort)
 
-echo "==> 第 1 步：core 独立编译（classpath 不含任何 jar，验证无 UI/控制台依赖）"
-javac -encoding UTF-8 -d "$CORE_OUT" $CORE_SRCS
+echo "==> 第 1 步：core 独立编译（classpath=lib/*，验证不含任何 GUI/CLI/控制台依赖）"
+javac -encoding UTF-8 -cp "$ROOT/lib/*" -d "$CORE_OUT" $CORE_SRCS
 echo "    完成：$CORE_OUT"
 
 echo "==> 第 2 步：全量编译 core + cli"
 rm -rf "$OUT"
 mkdir -p "$OUT"
-javac -encoding UTF-8 -d "$OUT" $CORE_SRCS $CLI_SRCS
+javac -encoding UTF-8 -cp "$ROOT/lib/*" -d "$OUT" $CORE_SRCS $CLI_SRCS
 echo "    完成：$OUT"
 
 echo "编译全部通过。运行方式："

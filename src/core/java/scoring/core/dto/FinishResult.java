@@ -5,26 +5,30 @@ import java.math.BigDecimal;
 /**
  * 「结束评分」的执行结果（面试打分流程的 GUI 交互模型）。
  *
- * <p>两条使用路径：
- * <ol>
- *   <li>评分 ≥3 条：调用 {@code finishInterview(no, false)} 直接完成，{@code completed=true}；</li>
- *   <li>评分 1～2 条：先调用 {@code finishInterview(no, false)} 得到 {@code completed=false}、
- *       {@code belowThree=true} 的预览（message 说明将按普通平均计算），GUI 弹二次确认框，
- *       确认后再次调用 {@code finishInterview(no, true)} 完成；用户拒绝则继续留在面试中。</li>
- * </ol>
+ * <p>n = 四维评分记录条数（每条记录必含四个维度，故各维 n 相同）。
+ * n ≥ 3：各维度分别去掉一个最高/一个最低后取平均（四维独立去极值）；
+ * n = 1～2：各维度按普通平均计算（需二次确认）；n = 0 拒绝结束。
  *
- * @param completed   本次调用是否真正结束了面试（false 表示需要二次确认的预览）
- * @param belowThree  结束时普通评分是否不足 3 条
- * @param average     最终采用/将采用的平均分（去极值或普通平均）
- * @param avgMethod   平均分计算方法
- * @param bonusTotal  该候选人全部附加分合计
- * @param finalScore  最终分 = average + bonusTotal；仅 completed=true 时有值（已完成）
- * @param message     面向用户的中文说明（预览时的提示 / 完成时的结算摘要）
+ * @param completed      本次调用是否真正结束了面试（false 表示需要二次确认的预览）
+ * @param belowThree     结束时评分记录是否不足 3 条
+ * @param rAvg           责任心平均分
+ * @param tAvg           时间管理能力平均分
+ * @param sAvg           学生工作能力平均分
+ * @param fAvg           部门契合度平均分
+ * @param dimensionTotal 四维平均之和（= rAvg+tAvg+sAvg+fAvg，舍入到两位）
+ * @param avgMethod      平均分计算方法（TRIMMED/PLAIN）
+ * @param bonusTotal     该候选人全部附加分合计
+ * @param finalScore     最终分 = dimensionTotal + bonusTotal；仅 completed=true 时有值
+ * @param message        面向用户的中文说明（预览时的提示 / 完成时的结算摘要）
  */
 public record FinishResult(
         boolean completed,
         boolean belowThree,
-        BigDecimal average,
+        BigDecimal rAvg,
+        BigDecimal tAvg,
+        BigDecimal sAvg,
+        BigDecimal fAvg,
+        BigDecimal dimensionTotal,
         AvgMethod avgMethod,
         BigDecimal bonusTotal,
         BigDecimal finalScore,
