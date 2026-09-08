@@ -8,6 +8,7 @@ core 层纯业务、零 UI 依赖；CLI 与 JavaFX GUI 两个壳都只依赖 cor
 
 ```
 lib/       第三方 jar：h2-2.2.224.jar（数据库）、openjfx-17/<platform>/（JavaFX 17 SDK，GUI 用）
+icons/     应用图标：app-icon.jpg（原图）、ScoringGUI.ico（Windows 打包/向导壳）、app-icon.png（JavaFX 窗口）
 data/      运行期数据库 scoring.mv.db 与 CSV 导出（已 gitignore）
 src/core/  core 层：ScoringService + DTO + 内部解析器/DAO（可无依赖独立编译）
 src/cli/   中文交互 CLI 壳（仅依赖 core）
@@ -64,41 +65,48 @@ Windows：`scripts\fetch-gui-libs.bat` → `scripts\build-gui.bat` → `scripts\
 
 ## 发布（Release）产物
 
-`dist/` 保存随 GitHub Release 一同发布的产物（随仓库入库，更新版本时重新生成）：
+`dist/` 保存随 GitHub Release 一同发布的产物（**不入库**，由打包脚本本地生成后作为 Release 附件上传）：
 
 | 文件 | 说明 | 重新生成 |
 |---|---|---|
-| `dist/ScoringGUI-win-package.zip` | **Windows 一键打包源包**：源码+脚本+文档+样例+H2 驱动（60 余项，约 3 MB） | `bash scripts/package-source.sh` |
-| `dist/ScoringGUI-1.0.0.exe` | Windows 无黑框安装器（**在 Windows 打包机上**由下面命令生成后放入 `dist/` 提交/挂附件） | `scripts\package-win.bat` |
+| `dist/ScoringGUI-Setup-1.0.0.exe` | **推荐交付物**——安装向导壳（内嵌安装引擎与图标）：双击安装，完成页可勾选「删除安装包」/立即运行；程序已安装时再双击提供 启动/卸载/关闭 管理页（卸载走标准 Windows 向导） | `scripts\package-win.bat`（第 7 步自动组装，也可单独 `scripts\build-setup.bat`） |
+| `dist/ScoringGUI-1.0.0.exe` | 纯安装引擎（jpackage 直出，供重打包等特殊场景；日常请发给同事 Setup 版） | `scripts\package-win.bat` |
+| `dist/ScoringGUI-win-package.zip` | （可选）Windows 一键打包源包：源码+脚本+文档+样例+H2 驱动（约 3 MB） | `bash scripts/package-source.sh` |
 
 ```
-# 1) Linux/macOS：重新生成 Windows 源包（已含最新文档/源码）
-bash scripts/package-source.sh
-
-# 2) Windows 打包机：解压源包 → 装 JDK17 → （进阶）新增/更新版本后
-scripts\package-win.bat      # 自动：检查环境→下载组件→编译→jpackage→dist\ScoringGUI-1.0.0.exe
+# Windows 打包机：解压源包 → 安装完整版 JDK 17 → 双击
+scripts\package-win.bat
+# 自动完成：环境检查（jpackage 缺失时按注册表自动补 PATH）→ 补下 H2/JavaFX
+# → 编译 core+gui → 组装 scoring-gui.jar → 补下 WiX（lib\wix3，仅首次）→
+# jpackage 生成引擎（含应用图标）→ 组装 Setup 安装向导壳
+# 产出：dist\ScoringGUI-1.0.0.exe + dist\ScoringGUI-Setup-1.0.0.exe
 ```
 
-- 打包必须在 Windows 机器上执行（需要**完整版** JDK 17，含 `jpackage`）；
+- 打包必须在 Windows 机器上执行（需要**完整版** JDK 17，含 `jpackage` 与 `javac`；无需预装 WiX、无需把 JDK bin 加进 PATH，脚本会自动定位；csc 用系统自带 .NET Framework 4.x）；
+- ⚠ 编码约定：**打包链路 bat**（`package-win` / `build-gui` / `build-setup` / `fetch-libs` / `fetch-gui-libs`）
+  以**系统 ANSI（GBK）编码**保存（与 cmd 默认代码页一致，双击可直接运行），请勿另存为 UTF-8；
+  其余 `run*.bat`/`build.bat` 保持 UTF-8（内含首行 `chcp 65001` 自理）；`SetupWizard.cs` 为 UTF-8
+  （编译时 `csc /codepage:65001`）；
 - 完整说明见 `docs/GUI打包指南-win.md`；打包参数与原理见《接口文档》§7.4；
 - 数据位置：默认「启动目录/data/」；装在 Program Files 等不可写目录时自动回退
   「用户主目录\.scoring-gui\data\」。
 
-### 打 GitHub Release（计划动作，命令含 gh 或网页操作）
+### 打 GitHub Release（命令含 gh 或网页操作）
 
 ```bash
 # 方式一：命令行（须安装 gh 并登录）
-gh release create v1.0.0 --title "v1.0.0 — GUI 前端与 Win 安装器" \
-  --notes "学生组织面试评分系统 GUI（JavaFX 17）+ Windows 安装器源包" \
-  "dist/ScoringGUI-win-package.zip"
+gh release create v1.0.0 --title "v1.0.0 — GUI 前端与 Windows 安装器" \
+  --notes "学生组织面试评分系统 GUI（JavaFX 17）+ Windows 安装器（Setup 向导壳）" \
+  "dist/ScoringGUI-Setup-1.0.0.exe"
 
-# 之后拿到 Windows 上产出的 ScoringGUI-1.0.0.exe 可再上传到同一 Release：
-gh release upload v1.0.0 dist/ScoringGUI-1.0.0.exe
+# 如需一并提供源包/引擎：
+gh release upload v1.0.0 dist/ScoringGUI-win-package.zip dist/ScoringGUI-1.0.0.exe
 ```
 
-方式二（网页）：GitHub 仓库 → Releases → New release → 输入 Tag `v1.0.0` →
-拖入 `dist/ScoringGUI-win-package.zip`（及 Windows 产出的 `ScoringGUI-1.0.0.exe`）→ Publish。
-最终用户会看到顺序：**先按序号下载「源包/安装器」→ 安装/打包 → 读 `docs/GUI使用说明.md`**。
+方式二（网页）：GitHub 仓库 → Releases → New release → 输入 Tag → 拖入
+`dist/ScoringGUI-Setup-1.0.0.exe`（为主附件；可选附源包/引擎）→ Publish。
+最终用户会看到顺序：**下载 Setup 安装器 → 双击安装 → 读 `docs/GUI使用说明.md`**。
+卸载请走：Windows 设置 → 应用 → ScoringGUI → 卸载（或再双击 Setup 走管理页【卸载】）。
 
 也可以手工编译（验收方式，JDK 17）：
 
