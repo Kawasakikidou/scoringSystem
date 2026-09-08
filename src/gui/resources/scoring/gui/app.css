@@ -56,6 +56,19 @@
 .nav-danger:hover {
     -fx-background-color: #fff5f5;
 }
+
+/* 危险操作（彻底重置等）：红色实底，与普通警示按钮明显区隔 */
+.danger-button {
+    -fx-background-color: #c53030;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
+.danger-button:hover {
+    -fx-background-color: #9b2c2c;
+}
+.danger-button:disabled {
+    -fx-opacity: 0.5;
+}
 .sidebar-sep {
     -fx-padding: 6px 4px;
 }

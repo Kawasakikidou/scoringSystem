@@ -28,7 +28,7 @@ echo "==> 编译 core + gui（平台 $PLATFORM，JavaFX SDK 17）"
 rm -rf "$OUT"
 mkdir -p "$OUT"
 javac -encoding UTF-8 -d "$OUT" \
-    -cp "$OUT:$ROOT/lib/h2-2.2.224.jar:$JFX_LIB/*" \
+    -cp "$OUT:$ROOT/lib/*:$JFX_LIB/*" \
     $CORE_SRCS $GUI_SRCS
 
 echo "==> 复制 GUI 资源（CSS）到 out/"

@@ -81,28 +81,42 @@ public final class Dialogs {
     }
 
     /**
-     * 「输入 YES 才放行」的二次确认对话框（初始化等高危操作用）。
+     * 「输入 YES 才放行」的二次确认对话框（初始化系统用）。
      *
      * @return true 表示用户输入了 YES（不区分大小写）并点击确认
      */
     public static boolean confirmTypedYes(String title, String message) {
+        return confirmTyped(title, message, "YES", "确认初始化");
+    }
+
+    /**
+     * 「手输指定确认词才放行」的二次确认对话框（彻底重置等高危操作用）。
+     *
+     * @param expectedWord 要求手输的确认词（不区分大小写，如 YES / 彻底重置）
+     * @param okText       确认按钮文字
+     * @return true 表示用户输入了确认词并点击确认按钮
+     */
+    public static boolean confirmTyped(String title, String message,
+                                       String expectedWord, String okText) {
         Dialog<Boolean> dlg = new Dialog<>();
         dlg.setTitle(title);
-        ButtonType okType = new ButtonType("确认初始化", ButtonBar.ButtonData.OK_DONE);
+        ButtonType okType = new ButtonType(okText, ButtonBar.ButtonData.OK_DONE);
         dlg.getDialogPane().getButtonTypes().addAll(okType, ButtonType.CANCEL);
 
         Label msg = new Label(message);
         msg.setWrapText(true);
         TextField field = new TextField();
-        field.setPromptText("请输入 YES");
-        VBox box = new VBox(12, msg, new Label("如确需执行，请在下方输入 YES（其它输入均视为取消）："), field);
+        field.setPromptText("请输入 " + expectedWord);
+        VBox box = new VBox(12, msg, new Label("如确需执行，请在下方输入 " + expectedWord
+                + "（其它输入均视为取消）："), field);
         box.setPadding(new Insets(16));
         box.setPrefWidth(460);
         dlg.getDialogPane().setContent(box);
 
         Node okBtn = dlg.getDialogPane().lookupButton(okType);
         okBtn.setDisable(true);
-        field.textProperty().addListener((obs, o, n) -> okBtn.setDisable(!"YES".equalsIgnoreCase(n.trim())));
+        field.textProperty().addListener((obs, o, n) ->
+                okBtn.setDisable(!expectedWord.equalsIgnoreCase(n.trim())));
         dlg.setResultConverter(bt -> bt == okType);
         return dlg.showAndWait().orElse(false);
     }

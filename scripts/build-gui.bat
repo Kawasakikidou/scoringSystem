@@ -1,16 +1,16 @@
 @echo off
-rem È«Á¿±àÒë core + gui£¨Windows£»ĞèÒª JDK 17£¬javac ÔÚ PATH£©
+rem È«ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ core + guiï¿½ï¿½Windowsï¿½ï¿½ï¿½ï¿½Òª JDK 17ï¿½ï¿½javac ï¿½ï¿½ PATHï¿½ï¿½
 setlocal enabledelayedexpansion
 set ROOT=%~dp0..
 set OUT=%ROOT%\out
 set JFX_LIB=%ROOT%\lib\openjfx-17\windows\lib
 
 if not exist "%JFX_LIB%\javafx.controls.jar" (
-    echo È±ÉÙ JavaFX SDK£¬ÏÈÖ´ĞĞ£ºscripts\fetch-gui-libs.bat
+    echo È±ï¿½ï¿½ JavaFX SDKï¿½ï¿½ï¿½ï¿½Ö´ï¿½Ğ£ï¿½scripts\fetch-gui-libs.bat
     exit /b 1
 )
 if not exist "%ROOT%\lib\h2-2.2.224.jar" (
-    echo È±ÉÙ H2 Çı¶¯£¬ÏÈÖ´ĞĞ£ºscripts\fetch-libs.bat
+    echo È±ï¿½ï¿½ H2 ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö´ï¿½Ğ£ï¿½scripts\fetch-libs.bat
     exit /b 1
 )
 
@@ -21,12 +21,12 @@ set ALL_SRCS=
 for /r "%ROOT%\src\core\java" %%f in (*.java) do set ALL_SRCS=!ALL_SRCS! "%%f"
 for /r "%ROOT%\src\gui\java" %%f in (*.java) do set ALL_SRCS=!ALL_SRCS! "%%f"
 
-echo ==^> ±àÒë core + gui£¨JavaFX SDK 17£©
-javac -encoding UTF-8 -d "%OUT%" -cp "%OUT%;%ROOT%\lib\h2-2.2.224.jar;%JFX_LIB%\*" %ALL_SRCS%
+echo ==^> ï¿½ï¿½ï¿½ï¿½ core + guiï¿½ï¿½JavaFX SDK 17ï¿½ï¿½
+javac -encoding UTF-8 -d "%OUT%" -cp "%OUT%;%ROOT%\lib\*;%JFX_LIB%\*" %ALL_SRCS%
 if errorlevel 1 exit /b 1
 
-echo ==^> ¸´ÖÆ GUI ×ÊÔ´£¨CSS£©µ½ out\
+echo ==^> ï¿½ï¿½ï¿½ï¿½ GUI ï¿½ï¿½Ô´ï¿½ï¿½CSSï¿½ï¿½ï¿½ï¿½ out\
 xcopy /E /I /Y "%ROOT%\src\gui\resources\*" "%OUT%\" >nul
 
-echo ±àÒëÍ¨¹ı¡£ÔËĞĞ£ºscripts\run-gui.bat
+echo ï¿½ï¿½ï¿½ï¿½Í¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ğ£ï¿½scripts\run-gui.bat
 endlocal

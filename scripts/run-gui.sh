@@ -26,4 +26,4 @@ fi
 
 exec java -Dfile.encoding=UTF-8 \
     --module-path "$JFX_LIB" --add-modules javafx.controls,javafx.fxml \
-    -cp "$ROOT/out:$ROOT/lib/h2-2.2.224.jar" scoring.gui.Main "$@"
+    -cp "$ROOT/out:$ROOT/lib/*" scoring.gui.Main "$@"

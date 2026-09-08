@@ -21,6 +21,7 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 
+import scoring.core.ScoringService;
 import scoring.core.dto.CandidateInfo;
 import scoring.core.dto.CandidateStatus;
 import scoring.core.dto.RankRow;
@@ -52,8 +53,7 @@ public final class RankingController implements Page {
 
     private VBox buildHeader() {
         Label title = new Label("排名");
-        title.getStyleClass().add("page-title");
-        Label sub = new Label("仅「已结束面试」参与排名；排序规则：最终分降序，同分按学号升序（无并列）。");
+        Label sub = new Label("仅「已结束面试」参与排名；排序规则：最终分降序 → 同分逐维比较（责任心→时间管理→学生工作→部门契合）→ 学号升序。");
         sub.getStyleClass().add("page-subtitle");
         VBox box = new VBox(4, title, sub);
         box.getStyleClass().add("page-header");
@@ -71,18 +71,28 @@ public final class RankingController implements Page {
         nameCol.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().candidate().name()));
         TableColumn<RankRow, String> noCol = new TableColumn<>("学号");
         noCol.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().candidate().studentNo()));
-        TableColumn<RankRow, String> avgCol = new TableColumn<>("平均分");
-        avgCol.setCellValueFactory(c -> new SimpleStringProperty(Formatters.fmt2(c.getValue().average())));
+        TableColumn<RankRow, String> rCol = new TableColumn<>(ScoringService.DIM_LABELS[0] + "均");
+        rCol.setCellValueFactory(c -> new SimpleStringProperty(Formatters.fmt2(c.getValue().rAvg())));
+        TableColumn<RankRow, String> tCol = new TableColumn<>(ScoringService.DIM_LABELS[1] + "均");
+        tCol.setCellValueFactory(c -> new SimpleStringProperty(Formatters.fmt2(c.getValue().tAvg())));
+        TableColumn<RankRow, String> sCol = new TableColumn<>(ScoringService.DIM_LABELS[2] + "均");
+        sCol.setCellValueFactory(c -> new SimpleStringProperty(Formatters.fmt2(c.getValue().sAvg())));
+        TableColumn<RankRow, String> fCol = new TableColumn<>(ScoringService.DIM_LABELS[3] + "均");
+        fCol.setCellValueFactory(c -> new SimpleStringProperty(Formatters.fmt2(c.getValue().fAvg())));
+        TableColumn<RankRow, String> dimTotalCol = new TableColumn<>("四维合计");
+        dimTotalCol.setCellValueFactory(c ->
+                new SimpleStringProperty(Formatters.fmt2(c.getValue().dimensionTotal())));
         TableColumn<RankRow, String> methodCol = new TableColumn<>("平均方式");
         methodCol.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().avgMethod().label()));
         TableColumn<RankRow, String> bonusCol = new TableColumn<>("附加合计");
         bonusCol.setCellValueFactory(c -> new SimpleStringProperty(Formatters.fmt2(c.getValue().bonusTotal())));
         TableColumn<RankRow, String> finalCol = new TableColumn<>("最终分");
         finalCol.setCellValueFactory(c -> new SimpleStringProperty(Formatters.fmt2(c.getValue().finalScore())));
-        TableColumn<RankRow, String> countCol = new TableColumn<>("评分条数");
+        TableColumn<RankRow, String> countCol = new TableColumn<>("记录数");
         countCol.setCellValueFactory(c ->
                 new SimpleStringProperty(String.valueOf(c.getValue().normalScoreCount())));
-        rankTable.getColumns().setAll(rankCol, nameCol, noCol, avgCol, methodCol, bonusCol, finalCol, countCol);
+        rankTable.getColumns().setAll(rankCol, nameCol, noCol, rCol, tCol, sCol, fCol,
+                dimTotalCol, methodCol, bonusCol, finalCol, countCol);
         VBox.setVgrow(rankTable, Priority.ALWAYS);
         rankTable.setRowFactory(v -> {
             TableRow<RankRow> row = new TableRow<>();
@@ -181,7 +191,7 @@ public final class RankingController implements Page {
                     unfinished.add(c);
                 }
             }
-            unfinishedTable.getItems().setAll(unfinished);
+            ruleLabel.setText("排序规则：最终分降序 → 同分按四维平均逐维比较（责任心→时间管理→学生工作→部门契合）→ 学号升序（无并列）。共 " + rows.size() + " 人参与排名。");
             ruleLabel.setText("排序规则：最终分降序；同分按学号升序。共 " + rows.size() + " 人参与排名。");
             unfinishedLabel.setText("未完成面试（" + unfinished.size() + " 人，不参与排名）");
         } catch (RuntimeException e) {

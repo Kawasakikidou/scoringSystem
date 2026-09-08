@@ -11,10 +11,14 @@ OUT="$ROOT/dist/ScoringGUI-win-package.zip"
 echo "==> 组装源包（staging: $STAGE）"
 rm -rf "$ROOT/dist/.stage"
 mkdir -p "$STAGE"
-for item in src/core src/gui src/cli scripts docs samples lib/h2-2.2.224.jar README.md .gitignore data/.gitkeep.txt; do
+for item in src/core src/gui src/cli scripts docs samples README.md .gitignore data/.gitkeep.txt; do
     if [ -e "$ROOT/$item" ]; then
         cp -r --parents "$item" "$STAGE/" 2>/dev/null || { mkdir -p "$STAGE/$(dirname "$item")"; cp -r "$ROOT/$item" "$STAGE/$item"; }
     fi
+done
+# 三方 jar：H2 + POI 系（core 二期 Excel 导入运行期依赖）；openjfx 大目录不打包（fetch-gui-libs 下载）
+for jar in "$ROOT"/lib/*.jar; do
+    [ -e "$jar" ] && mkdir -p "$STAGE/lib" && cp "$jar" "$STAGE/lib/"
 done
 
 cat > "$STAGE/请先读我.txt" <<'EOF'

@@ -33,6 +33,7 @@ public final class CandidatesController implements Page {
     private final TextField searchField;
     private final TableView<CandidateInfo> table;
     private final Label countLabel;
+    private NameListCard nameCard;
 
     public CandidatesController(AppContext ctx) {
         this.ctx = ctx;
@@ -64,7 +65,16 @@ public final class CandidatesController implements Page {
         countLabel = new Label();
         countLabel.getStyleClass().add("hint-text");
 
-        VBox body = new VBox(14, searchBar, table, countLabel);
+        // 名单管理操作组（二期）：新增/改名/改学号/删除；随表格选中行启用
+        nameCard = new NameListCard(ctx);
+        nameCard.onBind(this::doSearch,
+                no -> doSearch(),
+                () -> {
+                    searchField.clear();
+                    doSearch();
+                });
+
+        VBox body = new VBox(14, searchBar, table, countLabel, nameCard);
         body.setPadding(new Insets(24));
         root.setCenter(body);
     }
@@ -124,6 +134,14 @@ public final class CandidatesController implements Page {
 
         tv.getColumns().setAll(noCol, nameCol, statusCol, timeCol);
 
+        // 选中行 → 名单管理组绑定目标（清空选择时置灰改名/改号/删除）
+        tv.getSelectionModel().selectedItemProperty().addListener((obs, o, n) -> {
+            if (nameCard != null) {
+                nameCard.bindTarget(n == null ? null : n.studentNo(),
+                        n != null && n.status() == CandidateStatus.INTERVIEWING);
+            }
+        });
+
         tv.setRowFactory(v -> {
             TableRow<CandidateInfo> row = new TableRow<>();
             row.setOnMouseClicked(e -> {
@@ -143,6 +161,8 @@ public final class CandidatesController implements Page {
                     ? ctx.svc().listCandidates()
                     : ctx.svc().searchCandidates(kw);
             table.getItems().setAll(list);
+            table.getSelectionModel().clearSelection();
+            nameCard.bindTarget(null, false);
             countLabel.setText(kw.isEmpty()
                     ? "共 " + list.size() + " 人。"
                     : "关键字「" + kw + "」匹配到 " + list.size() + " 人（最多显示 20 条）。");

@@ -101,8 +101,22 @@ public final class Main extends Application implements AppContext.Navigator {
         });
         primaryStage.show();
 
+        // 二期：旧库自动迁移提示（score.points → 四维，旧评分未换算）
+        checkMigrationNotice();
         // 启动时检测未完成面试 → 弹「恢复上次未完成面试」
         checkResume();
+    }
+
+    /** 二期旧库迁移提示：migrationNotice() 非空说明发生过一期→二期自动迁移。 */
+    private void checkMigrationNotice() {
+        try {
+            String notice = service.migrationNotice();
+            if (notice != null && !notice.isBlank()) {
+                Dialogs.info("旧库已自动迁移", notice);
+            }
+        } catch (RuntimeException e) {
+            Dialogs.error(e.getMessage());
+        }
     }
 
     @Override
@@ -188,6 +202,20 @@ public final class Main extends Application implements AppContext.Navigator {
             }
         });
         side.getChildren().add(reset);
+
+        // 二期：彻底重置（红色危险样式，与「初始化系统」明显区隔；删除一切数据含名单与库文件）
+        Button resetEverything = new Button("彻底重置（删除一切数据）");
+        resetEverything.getStyleClass().addAll("nav-btn", "danger-button");
+        resetEverything.setMaxWidth(Double.MAX_VALUE);
+        resetEverything.setWrapText(true);
+        resetEverything.setOnAction(e -> {
+            boolean done = ResetFlow.runEverything(ctx, stage);
+            if (done) {
+                // 全部视图回到全新空状态：重新切入当前页（其余页面切入时亦会刷新）
+                show(currentPageId());
+            }
+        });
+        side.getChildren().add(resetEverything);
 
         return side;
     }

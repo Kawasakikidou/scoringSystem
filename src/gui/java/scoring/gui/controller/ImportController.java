@@ -30,8 +30,8 @@ public final class ImportController implements Page {
         root.getStyleClass().add("page");
         root.setTop(buildHeader());
 
-        Label tip = new Label("支持 txt / csv 文本名单（UTF-8 / GB18030 自动识别）。"
-                + "每行一人：一段 ≥2 个汉字的姓名 + 恰好 10 位数字学号。"
+        Label tip = new Label("支持 Excel（.xlsx / .xls，按文件自动识别）与 txt / csv 文本名单"
+                + "（文本自动识别 UTF-8 / GB18030）。每行一人：一段 ≥2 个汉字的姓名 + 恰好 10 位数字学号。"
                 + "重复导入安全：同一学号只会更新姓名，不会重复。");
         tip.getStyleClass().add("hint-text");
         tip.setWrapText(true);
@@ -65,7 +65,8 @@ public final class ImportController implements Page {
         FileChooser chooser = new FileChooser();
         chooser.setTitle("选择名单文件");
         chooser.getExtensionFilters().addAll(
-                new FileChooser.ExtensionFilter("名单文件 (*.txt, *.csv)", "*.txt", "*.csv"),
+                new FileChooser.ExtensionFilter("名单文件 (*.txt, *.csv, *.xlsx, *.xls)",
+                        "*.txt", "*.csv", "*.xlsx", "*.xls"),
                 new FileChooser.ExtensionFilter("所有文件", "*.*"));
         File file = chooser.showOpenDialog(root.getScene().getWindow());
         if (file == null) {

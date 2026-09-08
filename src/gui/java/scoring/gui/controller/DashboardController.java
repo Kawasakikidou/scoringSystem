@@ -69,7 +69,7 @@ public final class DashboardController implements Page {
         grid.add(statCard("未面试", pendingVal, "等待开始面试", "stat-pending"), 1, 0);
         grid.add(statCard("面试中", interviewingVal, "同一时刻最多 1 人", "stat-interviewing"), 2, 0);
         grid.add(statCard("已结束面试", finishedVal, "已产生最终分", "stat-finished"), 0, 1);
-        grid.add(statCard("普通评分条数", scoreCountVal, "全部已录入评分", "stat-total"), 1, 1);
+        grid.add(statCard("四维评分记录条数", scoreCountVal, "全部已录入的完整四维评分", "stat-total"), 1, 1);
         grid.add(statCard("附加分条数", bonusCountVal, "才艺等加分记录", "stat-total"), 2, 1);
 
         resumeCard = new VBox(8);

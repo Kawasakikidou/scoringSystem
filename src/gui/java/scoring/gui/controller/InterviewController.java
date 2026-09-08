@@ -18,6 +18,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
+import scoring.core.ScoringService;
 import scoring.core.dto.CandidateDetail;
 import scoring.core.dto.CandidateInfo;
 import scoring.core.dto.FinishResult;
@@ -28,12 +29,12 @@ import scoring.gui.ui.Formatters;
 import scoring.gui.ui.ScoreInputValidator;
 
 /**
- * 面试打分页：两种视图——
+ * 面试打分页（二期：四维评分）：两种视图——
  * <ul>
  *   <li>选人视图：搜索候选人并「开始面试」（已有他人面试中时不出现此视图，
  *       直接被会话视图顶替；beginInterview 的状态冲突错误也会弹出提示）；</li>
- *   <li>会话视图：逐条保存评分 / 删除上一条 / 结束评分（不足 3 条时按 core 返回的
- *       FinishResult 预览弹二次确认）。</li>
+ *   <li>会话视图：四维（责任心/时间管理能力/学生工作能力/部门契合度，各 0~25）四输入框
+ *       逐条保存 / 删除上一条 / 结束评分（不足 3 条时按 core 返回的 FinishResult 预览弹二次确认）。</li>
  * </ul>
  */
 public final class InterviewController implements Page {
@@ -52,7 +53,8 @@ public final class InterviewController implements Page {
     private Label sessionInfo;
     private TableView<ScoreItem> scoreTable;
     private Label scoreCountLabel;
-    private TextField scoreField;
+    /** 四维输入框（顺序与 ScoringService.DIM_LABELS 一致：r/t/s/f）。 */
+    private TextField[] dimFields;
     private Label statusLabel;
     private Button finishBtn;
 
@@ -160,30 +162,53 @@ public final class InterviewController implements Page {
 
         scoreTable = new TableView<>();
         scoreTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
-        scoreTable.setPlaceholder(new Label("还没有评分，请在下方输入第一条分值。"));
+        scoreTable.setPlaceholder(new Label("还没有评分记录，请在下方录入第一条完整四维评分。"));
         TableColumn<ScoreItem, String> idxCol = new TableColumn<>("序号");
         idxCol.setCellValueFactory(c -> new SimpleStringProperty(
                 String.valueOf(scoreTable.getItems().indexOf(c.getValue()) + 1)));
-        TableColumn<ScoreItem, String> valueCol = new TableColumn<>("分值");
-        valueCol.setCellValueFactory(c ->
-                new SimpleStringProperty(Formatters.fmt2(c.getValue().value())));
+        TableColumn<ScoreItem, String> rCol = new TableColumn<>(ScoringService.DIM_LABELS[0]);
+        rCol.setCellValueFactory(c -> new SimpleStringProperty(Formatters.fmt2(c.getValue().r())));
+        TableColumn<ScoreItem, String> tCol = new TableColumn<>(ScoringService.DIM_LABELS[1]);
+        tCol.setCellValueFactory(c -> new SimpleStringProperty(Formatters.fmt2(c.getValue().t())));
+        TableColumn<ScoreItem, String> sCol = new TableColumn<>(ScoringService.DIM_LABELS[2]);
+        sCol.setCellValueFactory(c -> new SimpleStringProperty(Formatters.fmt2(c.getValue().s())));
+        TableColumn<ScoreItem, String> fCol = new TableColumn<>(ScoringService.DIM_LABELS[3]);
+        fCol.setCellValueFactory(c -> new SimpleStringProperty(Formatters.fmt2(c.getValue().f())));
         TableColumn<ScoreItem, String> timeCol = new TableColumn<>("录入时间");
         timeCol.setCellValueFactory(c ->
                 new SimpleStringProperty(Formatters.fmtTime(c.getValue().addedAt())));
-        scoreTable.getColumns().setAll(idxCol, valueCol, timeCol);
+        scoreTable.getColumns().setAll(idxCol, rCol, tCol, sCol, fCol, timeCol);
         VBox.setVgrow(scoreTable, Priority.ALWAYS);
 
         scoreCountLabel = new Label();
         scoreCountLabel.getStyleClass().add("hint-text");
 
-        scoreField = new TextField();
-        scoreField.setPromptText("输入 0~100 的分值（最多两位小数，如 85 或 85.5）");
-        scoreField.setOnAction(e -> doAddScore());
-        HBox.setHgrow(scoreField, Priority.ALWAYS);
+        // 四维输入区：中文标签 = DIM_LABELS，各 0~25；回车按序流转，末框回车保存
+        dimFields = new TextField[ScoringService.DIM_LABELS.length];
+        HBox dimRow = new HBox(10);
+        for (int i = 0; i < dimFields.length; i++) {
+            Label lb = new Label(ScoringService.DIM_LABELS[i]);
+            lb.getStyleClass().add("hint-text");
+            TextField tf = new TextField();
+            tf.setPromptText("0~25");
+            final int idx = i;
+            tf.setOnAction(e -> {
+                if (idx < dimFields.length - 1) {
+                    dimFields[idx + 1].requestFocus();
+                } else {
+                    doAddScore();
+                }
+            });
+            HBox.setHgrow(tf, Priority.ALWAYS);
+            dimFields[i] = tf;
+            dimRow.getChildren().add(new VBox(2, lb, tf));
+        }
+        HBox.setHgrow(dimRow, Priority.ALWAYS);
         Button saveBtn = new Button("保存评分");
         saveBtn.getStyleClass().add("button-primary");
         saveBtn.setOnAction(e -> doAddScore());
-        HBox inputRow = new HBox(10, scoreField, saveBtn);
+        HBox inputRow = new HBox(16, dimRow, saveBtn);
+        inputRow.setAlignment(Pos.BOTTOM_LEFT);
 
         Button delBtn = new Button("删除上一条（误输入）");
         delBtn.getStyleClass().add("button-secondary");
@@ -239,13 +264,13 @@ public final class InterviewController implements Page {
             sessionTitle.setText("正在面试：" + d.candidate().name()
                     + "（" + d.candidate().studentNo() + "）");
             sessionInfo.setText("状态：" + d.candidate().status().label()
-                    + "　已录普通评分 " + d.scores().size() + " 条"
+                    + "　已录四维评分记录 " + d.scores().size() + " 条"
                     + (d.scores().size() >= 3
-                    ? "（结束评分时将自动去掉 1 个最高分、1 个最低分取平均）"
-                    : "（满 3 条后结束评分将自动去极值；不足 3 条结束需二次确认，按普通平均）"));
+                    ? "（结束评分时四个维度将各自去掉 1 个最高分、1 个最低分后取平均）"
+                    : "（满 3 条后各维自动去极值；不足 3 条结束需二次确认，按各维普通平均）"));
             scoreTable.getItems().setAll(d.scores());
             scoreTable.refresh();
-            scoreCountLabel.setText("普通评分（" + d.scores().size() + " 条）：");
+            scoreCountLabel.setText("四维评分记录（" + d.scores().size() + " 条）：");
         } catch (RuntimeException e) {
             Dialogs.error(e.getMessage());
         }
@@ -255,20 +280,31 @@ public final class InterviewController implements Page {
         if (current == null) {
             return;
         }
-        String text = scoreField.getText();
-        String err = ScoreInputValidator.validate(text, "分值");
-        if (err != null) {
-            Dialogs.error(err);
-            return;
+        BigDecimal[] dims = new BigDecimal[dimFields.length];
+        for (int i = 0; i < dimFields.length; i++) {
+            String err = ScoreInputValidator.validateDim(dimFields[i].getText(),
+                    ScoringService.DIM_LABELS[i]);
+            if (err != null) {
+                Dialogs.error(err);
+                dimFields[i].requestFocus();
+                return;
+            }
+            dims[i] = ScoreInputValidator.parse(dimFields[i].getText());
         }
-        BigDecimal v = ScoreInputValidator.parse(text);
         try {
-            ctx.svc().addInterviewScore(current.studentNo(), v);
-            scoreField.clear();
-            scoreField.requestFocus();
+            ctx.svc().addInterviewScore(current.studentNo(),
+                    dims[0], dims[1], dims[2], dims[3]);
+            for (TextField tf : dimFields) {
+                tf.clear();
+            }
+            dimFields[0].requestFocus();
             reloadScores();
-            statusLabel.setText("✓ 已保存评分 " + Formatters.fmt2(v)
-                    + "（第 " + scoreTable.getItems().size() + " 条），可继续添加。");
+            statusLabel.setText("✓ 已保存第 " + scoreTable.getItems().size() + " 条四维评分："
+                    + ScoringService.DIM_LABELS[0] + " " + Formatters.fmt2(dims[0]) + "、"
+                    + ScoringService.DIM_LABELS[1] + " " + Formatters.fmt2(dims[1]) + "、"
+                    + ScoringService.DIM_LABELS[2] + " " + Formatters.fmt2(dims[2]) + "、"
+                    + ScoringService.DIM_LABELS[3] + " " + Formatters.fmt2(dims[3])
+                    + "，可继续添加。");
         } catch (RuntimeException e) {
             Dialogs.error(e.getMessage());
         }
@@ -278,13 +314,17 @@ public final class InterviewController implements Page {
         if (current == null) {
             return;
         }
-        if (!Dialogs.confirm("删除评分", "确认删除该候选人最近一条评分？（之后可用「撤销」恢复）")) {
+        if (!Dialogs.confirm("删除评分", "确认删除该候选人最近一条四维评分记录？（之后可用「撤销」恢复）")) {
             return;
         }
         try {
             ScoreItem removed = ctx.svc().deleteLastInterviewScore(current.studentNo());
             reloadScores();
-            statusLabel.setText("✓ 已删除评分 " + Formatters.fmt2(removed.value()) + "。");
+            statusLabel.setText("✓ 已删除四维评分（"
+                    + ScoringService.DIM_LABELS[0] + " " + Formatters.fmt2(removed.r()) + "、"
+                    + ScoringService.DIM_LABELS[1] + " " + Formatters.fmt2(removed.t()) + "、"
+                    + ScoringService.DIM_LABELS[2] + " " + Formatters.fmt2(removed.s()) + "、"
+                    + ScoringService.DIM_LABELS[3] + " " + Formatters.fmt2(removed.f()) + "）。");
         } catch (RuntimeException e) {
             Dialogs.error(e.getMessage());
         }
@@ -318,13 +358,20 @@ public final class InterviewController implements Page {
     private void showFinishResult(FinishResult r) {
         Label title = new Label("面试已完成");
         title.getStyleClass().add("card-title");
+        Label avgLine = new Label(ScoringService.DIM_LABELS[0] + "均 " + Formatters.fmt2(r.rAvg())
+                + "　" + ScoringService.DIM_LABELS[1] + "均 " + Formatters.fmt2(r.tAvg())
+                + "　" + ScoringService.DIM_LABELS[2] + "均 " + Formatters.fmt2(r.sAvg())
+                + "　" + ScoringService.DIM_LABELS[3] + "均 " + Formatters.fmt2(r.fAvg()));
+        avgLine.setWrapText(true);
         VBox box = new VBox(8, title,
-                new Label("平均分：" + Formatters.fmt2(r.average()) + "（" + r.avgMethod().label()
-                        + (r.belowThree() ? "，评分不足 3 条经确认" : "") + "）"),
+                avgLine,
+                new Label("四维合计：" + Formatters.fmt2(r.dimensionTotal())
+                        + "（" + r.avgMethod().label()
+                        + (r.belowThree() ? "，评分不足 3 条经确认按各维普通平均" : "") + "）"),
                 new Label("附加分合计：" + Formatters.fmt2(r.bonusTotal())),
                 new Label("最终分：" + Formatters.fmt2(r.finalScore())));
         box.setPadding(new Insets(16));
-        box.setPrefWidth(420);
+        box.setPrefWidth(460);
         Dialogs.custom("结束评分结果", box);
     }
 
