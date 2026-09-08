@@ -1,23 +1,23 @@
 @echo off
-rem ä¸‹è½½ H2 é©±åŠ¨åˆ° lib\ï¼ˆWindows 10+ è‡ªå¸¦ curl.exeï¼›å¦åˆ™ç”¨ PowerShell ä¸‹è½½ï¼‰
+rem ÏÂÔØ H2 Çı¶¯µ½ lib\£¨Windows 10+ ×Ô´ø curl.exe£»·ñÔòÓÃ PowerShell ÏÂÔØ£©
 setlocal
 set ROOT=%~dp0..
 set H2_VERSION=2.2.224
 set JAR=%ROOT%\lib\h2-%H2_VERSION%.jar
 if not exist "%ROOT%\lib" mkdir "%ROOT%\lib"
 if exist "%JAR%" (
-    echo å·²å­˜åœ¨ï¼š%JAR%
+    echo ÒÑ´æÔÚ£º%JAR%
     exit /b 0
 )
-echo ä¸‹è½½ H2 é©±åŠ¨ï¼ˆMaven Centralï¼‰...
+echo ÏÂÔØ H2 Çı¶¯£¨Maven Central£©...
 curl.exe -fL --retry 3 -o "%JAR%" "https://repo1.maven.org/maven2/com/h2database/h2/%H2_VERSION%/h2-%H2_VERSION%.jar"
 if errorlevel 1 (
-    echo curl å¤±è´¥ï¼Œå°è¯• PowerShell ä¸‹è½½...
+    echo curl Ê§°Ü£¬³¢ÊÔ PowerShell ÏÂÔØ...
     powershell -NoProfile -Command "Invoke-WebRequest -Uri 'https://repo1.maven.org/maven2/com/h2database/h2/%H2_VERSION%/h2-%H2_VERSION%.jar' -OutFile '%JAR%'"
     if errorlevel 1 (
-        echo ä¸‹è½½å¤±è´¥ï¼šè¯·æ‰‹åŠ¨ä¸‹è½½ h2-%H2_VERSION%.jar æ”¾å…¥ lib\ ç›®å½•
+        echo ÏÂÔØÊ§°Ü£ºÇëÊÖ¶¯ÏÂÔØ h2-%H2_VERSION%.jar ·ÅÈë lib\ Ä¿Â¼
         exit /b 1
     )
 )
-echo å®Œæˆï¼š%JAR%
+echo Íê³É£º%JAR%
 endlocal

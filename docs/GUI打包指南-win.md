@@ -22,9 +22,19 @@
 
 1. 解压一键包（或已有项目），进入项目根目录；
 2. 双击运行 `scripts\package-win.bat`（或在 cmd 中执行）；
-   - 脚本会：检查 JDK17/jpackage → 自动补下 H2 与 JavaFX SDK → javac 编译 core+gui → 组装
-     `scoring-gui.jar`（含 CSS 资源，主类 `scoring.gui.Main`）→ 调用 `jpackage`；
-3. 结束后在 `dist\` 下得到 **`ScoringGUI-1.0.0.exe`** —— 这就是成品安装器。
+   - 脚本会：检查 JDK17/jpackage（缺失自动补 PATH）→ 自动补下 H2 与 JavaFX SDK → javac 编译
+     core+gui → 组装 `scoring-gui.jar`（含 CSS 资源，主类 `scoring.gui.Main`）→ 调用 `jpackage`
+     → 再调用 `build-setup.bat` 把安装器嵌入**安装向导壳**（csc 编译，Win10/11 自带 .NET）；
+3. 结束后在 `dist\` 下得到两个文件：
+   - **`ScoringGUI-Setup-1.0.0.exe`（推荐交付物）**：安装向导壳（见下节），双击 → 安装进度 →
+     完成页可勾选「删除安装包」、可立即运行；若程序已安装，再双击它会显示
+     「启动 / 卸载 / 关闭」管理页，卸载走标准的 Windows 卸载向导；
+   - `ScoringGUI-1.0.0.exe`：纯安装引擎（jpackage 直出；重打包/特殊场景用）。
+
+   > ⚠ 卸载请用：设置 → 应用 → ScoringGUI → 卸载（或向导壳管理页的【卸载】）。
+   > 不要对已安装状态再次运行 `ScoringGUI-1.0.0.exe`——jpackage 引擎会静默拉起
+   > 一个挂死的 msiexec 修复进程（无窗口、不结束），这是引擎本身的行为限制；
+   > 向导壳（Setup 版）已刻意规避该路径。
 
 可选控制台操作（Windows 终端乱码时先执行 `chcp 65001`）。
 
@@ -36,10 +46,12 @@ jpackage --type exe --name ScoringGUI --app-version 1.0.0 --vendor "ScoringGUI" 
   --module-path lib\openjfx-17\windows-jmods ^
   --add-modules javafx.controls,javafx.fxml,java.sql,java.logging,java.management,java.naming ^
   --java-options "-Dfile.encoding=UTF-8" ^
-  --dest dist --win-console=false --win-shortcut --win-per-user-install
+  --dest dist --win-shortcut --win-per-user-install
 ```
 
-- `--win-console=false`：**关键**——GUI 子系统，运行时不出现命令行黑框；
+- ⚠ 不要写 `--win-console=false`：`--win-console` 是无值开关（加了反而变成「控制台应用」），
+  **缺省即 GUI 子系统**，运行时不出现命令行黑框；旧版文档里 `--win-console=false` 的写法在
+  新版 jpackage 会直接报「无效选项」；
 - `--module-path …-jmods --add-modules …`：把 JavaFX **jmods** 链入内置运行时
   （应用仍在 classpath），运行机**无需另装 Java**。⚠ 为什么用 jmods 而非 SDK 的 `windows\lib`：
   SDK 里的 `*.dll` 是松散文件，jlink/jpackage 不会把它们带入运行时——那样产出的安装包一启动

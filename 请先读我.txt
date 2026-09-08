@@ -1,0 +1,17 @@
+【学生组织面试评分系统 GUI —— Windows 打包源包】
+====================================================
+1. 在 Windows 上安装「完整版」JDK 17（scoop/chocolatey/adoptium 均可；JRE 不行，
+   需要 jpackage）。命令行验证：java -version 显示 17.0.x，where jpackage 有输出。
+2. 双击 scripts\package-win.bat
+   - 自动完成：环境检查 → 下载 H2 与 JavaFX 17 SDK/jmods（仅首次，共约 150MB）
+     → javac 编译 core+gui → 组装 scoring-gui.jar → jpackage 生成安装器；
+   - 无管理员权限要求（按用户安装）。
+3. 产出：
+   - dist\ScoringGUI-Setup-1.0.0.exe —— 推荐交付物（安装向导壳：双击安装，
+     完成后可勾选删除安装包；再次双击已装程序时提供 启动/卸载/关闭 管理页）；
+   - dist\ScoringGUI-1.0.0.exe —— 纯安装引擎（供重打包等特殊场景）。
+   拷给任何 Windows 10/11 电脑即可双击安装，运行无黑框；目标机无需装 Java。
+   卸载请走：Windows 设置 → 应用 → ScoringGUI → 卸载（不要用安装包卸载）。
+4. 详细说明：docs\GUI打包指南-win.md；使用手册：docs\GUI使用说明.md；
+   安装后请按 docs\GUI交付说明.md 第 3 节冒烟清单验证一遍。
+5. 数据与备份：见 docs\GUI打包指南-win.md 第 5 节（默认 data\，程序 Files 下自动用用户目录）。

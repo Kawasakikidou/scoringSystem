@@ -1,7 +1,7 @@
 @echo off
-rem ä¸‹è½½ JavaFX 17 SDKï¼ˆGluon å®˜æ–¹ï¼ŒWindows amd64ï¼‰åˆ° lib\openjfx-17\windows\
-rem ç”¨æ³•ï¼šscripts\fetch-gui-libs.bat [-x http://ä»£ç†:ç«¯å£]
-rem   è„šæœ¬ä¸å†™æ­»ä»»ä½•ä»£ç†ï¼›æœ¬æœºæ— å¤–ç½‘æ—¶å¯ç”¨ -x æ˜¾å¼é€ä¼ ä»£ç†ã€‚Windows 10+ è‡ªå¸¦ curl.exeã€‚
+rem ÏÂÔØ JavaFX 17 SDK£¨Gluon ¹Ù·½£¬Windows amd64£©µ½ lib\openjfx-17\windows\
+rem ÓÃ·¨£ºscripts\fetch-gui-libs.bat [-x http://´úÀí:¶Ë¿Ú]
+rem   ½Å±¾²»Ð´ËÀÈÎºÎ´úÀí£»±¾»úÎÞÍâÍøÊ±¿ÉÓÃ -x ÏÔÊ½Í¸´«´úÀí¡£Windows 10+ ×Ô´ø curl.exe¡£
 setlocal
 set ROOT=%~dp0..
 set JFX_VERSION=17.0.20
@@ -18,23 +18,23 @@ if not exist "%DEST%\lib\javafx.controls.jar" set NEED_SDK=1
 set NEED_JMODS=0
 if not exist "%JMODS_DEST%\javafx.controls.jmod" set NEED_JMODS=1
 if "%NEED_SDK%"=="0" if "%NEED_JMODS%"=="0" (
-    echo å·²å­˜åœ¨ï¼š%DEST% ä¸Ž %JMODS_DEST%
+    echo ÒÑ´æÔÚ£º%DEST% Óë %JMODS_DEST%
     exit /b 0
 )
 if not exist "%DEST%" mkdir "%DEST%"
 if not exist "%JMODS_DEST%" mkdir "%JMODS_DEST%"
 
-rem ---- ä¸‹è½½å•ä¸ª zip åˆ°ç›®æ ‡ç›®å½•å¹¶åŽŸåœ°è§£åŒ… ----
+rem ---- ÏÂÔØµ¥¸ö zip µ½Ä¿±êÄ¿Â¼²¢Ô­µØ½â°ü ----
 call :download_unpack "%URL%" "%DEST%" openjfx
 if errorlevel 1 exit /b 1
-echo å®Œæˆï¼š%DEST%\lib ï¼ˆå¼€å‘è¿è¡Œï¼š--module-path æŒ‡å‘è¯¥ç›®å½•ï¼‰
+echo Íê³É£º%DEST%\lib £¨¿ª·¢ÔËÐÐ£º--module-path Ö¸Ïò¸ÃÄ¿Â¼£©
 
 call :download_unpack "%JMODS_URL%" "%JMODS_DEST%" openjfxjmods
 if errorlevel 1 exit /b 1
-echo å®Œæˆï¼š%JMODS_DEST% ï¼ˆæ‰“åŒ…ï¼šjpackage --module-path æŒ‡å‘è¯¥ç›®å½•ï¼‰
+echo Íê³É£º%JMODS_DEST% £¨´ò°ü£ºjpackage --module-path Ö¸Ïò¸ÃÄ¿Â¼£©
 exit /b 0
 
-rem ==================== å­ç¨‹åº ====================
+rem ==================== ×Ó³ÌÐò ====================
 :download_unpack
 set SRCURL=%~1
 set DSTDIR=%~2
@@ -42,34 +42,34 @@ set TAG=%~3
 if exist "%DSTDIR%\%TAG%-done.txt" goto :eof
 set TMPDIR=%TEMP%\%TAG%-%JFX_VERSION%-%RANDOM%%RANDOM%
 mkdir "%TMPDIR%"
-echo ==^> éªŒè¯ä¸‹è½½åœ°å€ï¼ˆHEADï¼‰ï¼š%SRCURL%
+echo ==^> ÑéÖ¤ÏÂÔØµØÖ·£¨HEAD£©£º%SRCURL%
 if defined PROXY (
     curl.exe -fsSI --max-time 30 -x "%PROXY%" "%SRCURL%" >nul 2>&1
 ) else (
     curl.exe -fsSI --max-time 30 "%SRCURL%" >nul 2>&1
 )
 if errorlevel 1 (
-    echo é”™è¯¯ï¼šä¸‹è½½åœ°å€ä¸å¯è¾¾ï¼š%SRCURL%
+    echo ´íÎó£ºÏÂÔØµØÖ·²»¿É´ï£º%SRCURL%
     exit /b 1
 )
-echo ==^> ä¸‹è½½ä¸­â€¦â€¦
+echo ==^> ÏÂÔØÖÐ¡­¡­
 if defined PROXY (
     curl.exe -fL --retry 3 -x "%PROXY%" -o "%TMPDIR%\%TAG%.zip" "%SRCURL%"
 ) else (
     curl.exe -fL --retry 3 -o "%TMPDIR%\%TAG%.zip" "%SRCURL%"
 )
 if errorlevel 1 (
-    echo curl å¤±è´¥ï¼Œå°è¯• PowerShell ä¸‹è½½...
+    echo curl Ê§°Ü£¬³¢ÊÔ PowerShell ÏÂÔØ...
     powershell -NoProfile -Command "Invoke-WebRequest -Uri '%SRCURL%' -OutFile '%TMPDIR%\%TAG%.zip'"
     if errorlevel 1 (
-        echo ä¸‹è½½å¤±è´¥ï¼šè¯·æ‰‹åŠ¨ä¸‹è½½ %SRCURL%
+        echo ÏÂÔØÊ§°Ü£ºÇëÊÖ¶¯ÏÂÔØ %SRCURL%
         exit /b 1
     )
 )
-echo ==^> è§£åŽ‹åˆ° %DSTDIR% ...
+echo ==^> ½âÑ¹µ½ %DSTDIR% ...
 powershell -NoProfile -Command "Expand-Archive -Path '%TMPDIR%\%TAG%.zip' -DestinationPath '%TMPDIR%' -Force"
 if errorlevel 1 (
-    echo è§£åŽ‹å¤±è´¥
+    echo ½âÑ¹Ê§°Ü
     exit /b 1
 )
 for /d %%d in ("%TMPDIR%\javafx-sdk-*" "%TMPDIR%\javafx-jmods-*") do (

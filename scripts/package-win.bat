@@ -1,84 +1,129 @@
 @echo off
 rem ============================================================
-rem å­¦ç”Ÿç»„ç»‡é¢è¯•è¯„åˆ†ç³»ç»Ÿ GUI â€”â€” ä¸€é”®æ‰“åŒ…ä¸º Windows exe (jpackage)
-rem ç”¨æ³•ï¼šscripts\package-win.bat        ï¼ˆåœ¨ Windows æ‰“åŒ…æœºä¸Šè¿è¡Œï¼‰
-rem å‰ç½®ï¼šJDK 17ï¼ˆå®Œæ•´ç‰ˆï¼Œå« jpackage å·¥å…·ï¼‰ï¼›é¦–æ¬¡æ‰“åŒ…éœ€è¦è”ç½‘ä¸‹è½½ç»„ä»¶ã€‚
-rem äº§å‡ºï¼šdist\ScoringGUI-1.0.0.exe ï¼ˆå®‰è£…å™¨ï¼ŒåŒå‡»å³è£…ï¼Œæ— æ§åˆ¶å°é»‘æ¡†ï¼‰
-rem è¯¦ç»†è¯´æ˜è§ docs\GUIæ‰“åŒ…æŒ‡å—-win.md
+rem Ñ§Éú×éÖ¯ÃæÊÔÆÀ·ÖÏµÍ³ GUI ¡ª¡ª Ò»¼ü´ò°üÎª Windows exe (jpackage)
+rem ÓÃ·¨£ºscripts\package-win.bat        £¨ÔÚ Windows ´ò°ü»úÉÏÔËĞĞ£©
+rem Ç°ÖÃ£ºJDK 17£¨ÍêÕû°æ£¬º¬ jpackage ¹¤¾ß£©£»Ê×´Î´ò°üĞèÒªÁªÍøÏÂÔØ×é¼ş¡£
+rem ²ú³ö£ºdist\ScoringGUI-1.0.0.exe £¨°²×°Æ÷£¬Ë«»÷¼´×°£¬ÎŞ¿ØÖÆÌ¨ºÚ¿ò£©
+rem ÏêÏ¸ËµÃ÷¼û docs\GUI´ò°üÖ¸ÄÏ-win.md
+rem
+rem ×¢Òâ£º±¾½Å±¾£¨¼°Í¬Ä¿Â¼ÆäËû .bat£©ÒÔÏµÍ³ ANSI£¨GBK£©±àÂë±£´æ£¬
+rem       Óë cmd Ä¬ÈÏ´úÂëÒ³Ò»ÖÂ£¬Ë«»÷¿ÉÖ±½ÓÔËĞĞ¡£ÇëÎğÁí´æÎª UTF-8£¬
+rem       ·ñÔòÖĞÎÄ×¢ÊÍ/ÌáÊ¾ÔÚ GBK ¿ØÖÆÌ¨ÏÂ»á±»Îó½âÎöµ¼ÖÂÃüÁî´íÂÒ¡£
 rem ============================================================
-chcp 65001 >nul
-setlocal
+setlocal EnableDelayedExpansion
 set ROOT=%~dp0..
 cd /d "%ROOT%"
 set APP_NAME=ScoringGUI
 set APP_VERSION=1.0.0
 set DEST=%ROOT%\dist
 set JMODS=%ROOT%\lib\openjfx-17\windows-jmods
+set WIX=%ROOT%\lib\wix3
 
 echo ============================================================
-echo   ä¸€é”®æ‰“åŒ…ï¼š%APP_NAME% v%APP_VERSION%  (Windows)
+echo   Ò»¼ü´ò°ü£º%APP_NAME% v%APP_VERSION%  (Windows)
 echo ============================================================
 
-rem ---- ç¬¬ 0 æ­¥ï¼šç¯å¢ƒæ£€æŸ¥ï¼ˆJDK 17 + jpackageï¼‰----
+rem ---- µÚ 0 ²½£º»·¾³¼ì²é£¨JDK 17 + jpackage£»È±Ê§Ê±×Ô¶¯´Ó×¢²á±í²¹ PATH£©----
 java -version 2>&1 | findstr /b "java" | findstr "17\.0" >nul
 if errorlevel 1 (
-  echo [å¤±è´¥] éœ€è¦ JDK 17ï¼ˆjava -version åº”æ˜¾ç¤º 17.0.xï¼‰ã€‚è¯·å…ˆå®‰è£… JDK17 å¹¶åŠ å…¥ PATHã€‚
+  echo [Ê§°Ü] ĞèÒª JDK 17£¨java -version Ó¦ÏÔÊ¾ 17.0.x£©¡£ÇëÏÈ°²×° JDK17 ²¢¼ÓÈë PATH¡£
   exit /b 1
 )
 where jpackage >nul 2>&1
 if errorlevel 1 (
-  echo [å¤±è´¥] æ‰¾ä¸åˆ° jpackageã€‚è¯·å®‰è£…â€œå®Œæ•´ç‰ˆâ€JDK 17ï¼ˆJRE ä¸å¤Ÿï¼‰ï¼Œæˆ–æŠŠ JDK17\bin åŠ å…¥ PATHã€‚
+  echo   jpackage ²»ÔÚ PATH£¬³¢ÊÔ´Ó JDK ×¢²á±í×Ô¶¯¶¨Î» bin Ä¿Â¼...
+  set "JH="
+  for /f "tokens=2,*" %%a in ('reg query "HKLM\SOFTWARE\JavaSoft\JDK" /s /v JavaHome 2^>nul ^| findstr /i "JavaHome"') do set "JH=%%b"
+  if defined JH if exist "!JH!\bin\jpackage.exe" set "PATH=!JH!\bin;!PATH!"
+)
+where jpackage >nul 2>&1
+if errorlevel 1 (
+  echo [Ê§°Ü] ÕÒ²»µ½ jpackage¡£Çë°²×°"ÍêÕû°æ"JDK 17£¨JRE ²»¹»£©£¬»ò°Ñ JDK17 µÄ bin Ä¿Â¼¼ÓÈë PATH ºóÖØÊÔ¡£
   exit /b 1
 )
-echo [1/5] ç¯å¢ƒæ£€æŸ¥é€šè¿‡ï¼šJDK 17 + jpackage
+echo [1/6] »·¾³¼ì²éÍ¨¹ı£ºJDK 17 + jpackage
 
-rem ---- ç¬¬ 1 æ­¥ï¼šä¾èµ–ï¼ˆH2 é©±åŠ¨ + JavaFX 17 SDKï¼Œå·²å­˜åœ¨è‡ªåŠ¨è·³è¿‡ï¼‰----
+rem ---- µÚ 1 ²½£ºÒÀÀµ£¨H2 Çı¶¯ + JavaFX 17 SDK£¬ÒÑ´æÔÚ×Ô¶¯Ìø¹ı£©----
 if not exist "%ROOT%\lib\h2-2.2.224.jar" (
-  echo [2/5] ä¸‹è½½ H2 é©±åŠ¨...
-  call scripts\fetch-libs.bat || (echo [å¤±è´¥] H2 ä¸‹è½½å¤±è´¥ & exit /b 1)
-) else echo [2/5] H2 é©±åŠ¨å·²å°±ç»ª
+  echo [2/6] ÏÂÔØ H2 Çı¶¯...
+  call scripts\fetch-libs.bat || (echo [Ê§°Ü] H2 ÏÂÔØÊ§°Ü & exit /b 1)
+) else echo [2/6] H2 Çı¶¯ÒÑ¾ÍĞ÷
 if not exist "%ROOT%\lib\openjfx-17\windows\lib\javafx.controls.jar" if not exist "%JMODS%\javafx.controls.jmod" (
-  echo [2/5] ä¸‹è½½ JavaFX 17 SDK ä¸ jmodsï¼ˆWindowsï¼Œçº¦ 150MBï¼Œä»…é¦–æ¬¡ï¼‰...
-  call scripts\fetch-gui-libs.bat || (echo [å¤±è´¥] JavaFX ä¸‹è½½å¤±è´¥ & exit /b 1)
+  echo [2/6] ÏÂÔØ JavaFX 17 SDK Óë jmods£¨Windows£¬Ô¼ 150MB£¬½öÊ×´Î£©...
+  call scripts\fetch-gui-libs.bat || (echo [Ê§°Ü] JavaFX ÏÂÔØÊ§°Ü & exit /b 1)
 ) else if not exist "%JMODS%\javafx.controls.jmod" (
-  echo [2/5] è¡¥ä¸‹è½½ JavaFX 17 jmodsï¼ˆæ‰“åŒ…éœ€è¦ï¼‰...
-  call scripts\fetch-gui-libs.bat || (echo [å¤±è´¥] jmods ä¸‹è½½å¤±è´¥ & exit /b 1)
-) else echo [2/5] JavaFX 17ï¼ˆSDK+jmodsï¼Œwindowsï¼‰å·²å°±ç»ª
+  echo [2/6] ²¹ÏÂÔØ JavaFX 17 jmods£¨´ò°üĞèÒª£©...
+  call scripts\fetch-gui-libs.bat || (echo [Ê§°Ü] jmods ÏÂÔØÊ§°Ü & exit /b 1)
+) else echo [2/6] JavaFX 17£¨SDK+jmods£¬windows£©ÒÑ¾ÍĞ÷
 
-rem ---- ç¬¬ 2 æ­¥ï¼šç¼–è¯‘ core + guiï¼ˆjavac ç›´ç¼–ï¼Œå«å¤åˆ¶ CSS èµ„æºï¼‰----
-echo [3/5] ç¼–è¯‘ core + gui ...
-call scripts\build-gui.bat || (echo [å¤±è´¥] ç¼–è¯‘å¤±è´¥ & exit /b 1)
+rem ---- µÚ 2 ²½£º±àÒë core + gui£¨javac Ö±±à£¬º¬¸´ÖÆ CSS ×ÊÔ´£©----
+echo [3/6] ±àÒë core + gui ...
+call scripts\build-gui.bat || (echo [Ê§°Ü] ±àÒëÊ§°Ü & exit /b 1)
 
-rem ---- ç¬¬ 3 æ­¥ï¼šæ”¶é›†æ‰“åŒ…è¾“å…¥ï¼ˆscoring-gui.jar + h2 é©±åŠ¨ï¼‰----
-echo [4/5] ç»„è£…åº”ç”¨ jar...
+rem ---- µÚ 3 ²½£ºÊÕ¼¯´ò°üÊäÈë£¨scoring-gui.jar + h2 Çı¶¯£©----
+echo [4/6] ×é×°Ó¦ÓÃ jar...
 if exist "%ROOT%\dist-pkg" rmdir /s /q "%ROOT%\dist-pkg"
 mkdir "%ROOT%\dist-pkg"
 jar --create --file "%ROOT%\dist-pkg\scoring-gui.jar" --main-class scoring.gui.Main -C out .
-if errorlevel 1 (echo [å¤±è´¥] jar æ‰“åŒ…å¤±è´¥ & exit /b 1)
+if errorlevel 1 (echo [Ê§°Ü] jar ´ò°üÊ§°Ü & exit /b 1)
 copy /y "%ROOT%\lib\h2-2.2.224.jar" "%ROOT%\dist-pkg\" >nul
-if errorlevel 1 (echo [å¤±è´¥] å¤åˆ¶ H2 å¤±è´¥ & exit /b 1)
-echo        è¾“å…¥ç›®å½• dist-pkg\ ï¼šscoring-gui.jar + h2-2.2.224.jar
+if errorlevel 1 (echo [Ê§°Ü] ¸´ÖÆ H2 Ê§°Ü & exit /b 1)
+echo        ÊäÈëÄ¿Â¼ dist-pkg\ £ºscoring-gui.jar + h2-2.2.224.jar
 
-rem ---- ç¬¬ 4 æ­¥ï¼šjpackage ç”Ÿæˆæ— é»‘æ¡† exe å®‰è£…å™¨ ----
-echo [5/5] jpackage æ‰“åŒ…å®‰è£…å™¨ï¼ˆ--win-console=false æ— æ§åˆ¶å°é»‘æ¡†ï¼‰...
+rem ---- µÚ 4 ²½£ºWiX ¹¤¾ß£¨jpackage Éú³É exe °²×°Æ÷±ØĞè£»È±Ê§Ê±×Ô¶¯ÏÂÔØµ½ lib\wix3£©----
+if not exist "%WIX%\light.exe" (
+  echo [5/6] Î´ÕÒµ½ WiX ¹¤¾ß£¬×Ô¶¯ÏÂÔØ WiX 3.14 µ½ lib\wix3£¨Ô¼ 40MB£¬½öÊ×´Î£©...
+  if not exist "%WIX%" mkdir "%WIX%"
+  set "WIXZIP=%TEMP%\wix314-binaries.zip"
+  curl.exe -fL --retry 3 -o "!WIXZIP!" "https://github.com/wixtoolset/wix3/releases/download/wix3141rtm/wix314-binaries.zip"
+  if errorlevel 1 (
+    echo [Ê§°Ü] WiX ÏÂÔØÊ§°Ü¡£¿ÉÊÖ¶¯´Ó https://github.com/wixtoolset/wix3/releases
+    echo        ÏÂÔØ wix314-binaries.zip ½âÑ¹µ½ lib\wix3\ ºóÖØÊÔ¡£
+    exit /b 1
+  )
+  powershell -NoProfile -Command "Expand-Archive -Path '!WIXZIP!' -DestinationPath '!WIX!' -Force"
+  if errorlevel 1 (echo [Ê§°Ü] WiX ½âÑ¹Ê§°Ü & exit /b 1)
+)
+if not exist "%WIX%\light.exe" (
+  echo [Ê§°Ü] lib\wix3 ÏÂÕÒ²»µ½ light.exe£¬WiX ×é¼ş²»ÍêÕû¡£Çë¼ì²é lib\wix3 ºóÖØÊÔ¡£
+  exit /b 1
+)
+set "PATH=%WIX%;%PATH%"
+echo [5/6] WiX ¹¤¾ß¾ÍĞ÷
+
+rem ---- µÚ 5 ²½£ºjpackage Éú³ÉÎŞºÚ¿ò exe °²×°Æ÷ ----
+rem ×¢Òâ£º²»¼Ó --win-console ¡ª¡ª ËüÊÇÎŞÖµ¿ª¹Ø£¬¼ÓÉÏ¼´±ä³É"¿ØÖÆÌ¨Ó¦ÓÃ"£»
+rem      È±Ê¡¼´ GUI ×ÓÏµÍ³£¬ÔËĞĞÊ±²»³öÏÖÃüÁîĞĞºÚ¿ò£¨--win-console=false Ğ´·¨
+rem      ÔÚĞÂ°æ jpackage »á±¨"ÎŞĞ§Ñ¡Ïî"£©¡£
+echo [6/6] jpackage ´ò°ü°²×°Æ÷£¨GUI ×ÓÏµÍ³£¬ÎŞ¿ØÖÆÌ¨ºÚ¿ò£©...
 if not exist "%DEST%" mkdir "%DEST%"
 jpackage --type exe --name %APP_NAME% --app-version %APP_VERSION% --vendor "ScoringGUI" ^
   --input "%ROOT%\dist-pkg" --main-jar scoring-gui.jar --main-class scoring.gui.Main ^
   --module-path "%JMODS%" --add-modules javafx.controls,javafx.fxml,java.sql,java.logging,java.management,java.naming ^
   --java-options "-Dfile.encoding=UTF-8" ^
+  --icon "%ROOT%\icons\ScoringGUI.ico" ^
   --dest "%DEST%" ^
-  --win-console=false --win-shortcut --win-per-user-install
+  --win-shortcut --win-per-user-install
 if errorlevel 1 (
-  echo [å¤±è´¥] jpackage æ‰“åŒ…å‡ºé”™ã€‚å¸¸è§åŸå› ï¼šjpackage ç‰ˆæœ¬ä¸ JDK ä¸ä¸€è‡´ / ç£ç›˜ç©ºé—´ä¸è¶³ / å®‰è£…åŒ…åå†²çªã€‚
+  echo [Ê§°Ü] jpackage ´ò°ü³ö´í¡£³£¼ûÔ­Òò£ºjpackage °æ±¾Óë JDK ²»Ò»ÖÂ /
+  echo        ´ÅÅÌ¿Õ¼ä²»×ã / ¾ÉµÄ°²×°°üÈÔ±»Õ¼ÓÃ£¨ÏÈÉ¾ dist\ ÏÂÍ¬Ãû exe£©/
+  echo        Windows Installer »ò .NET ×é¼şÒì³£¡£
   exit /b 1
 )
 
+rem ---- µÚ 7 ²½£º×é×°°²×°Ïòµ¼¿Ç£¨ÍÆ¼ö½»¸¶Îï£¬Íê³ÉÒ³¿É¹´Ñ¡É¾³ı°²×°°ü£©----
+call scripts\build-setup.bat || (echo [¾¯¸æ] Ïòµ¼¿Ç×é×°Ê§°Ü£¬¿ÉÉÔºóµ¥¶ÀÔËĞĞ scripts\build-setup.bat & exit /b 1)
+
 echo.
 echo ============================================================
-echo   æ‰“åŒ…å®Œæˆï¼š%DEST%\%APP_NAME%-%APP_VERSION%.exe
-echo   åŒå‡»å³è£…ï¼ˆæ— éœ€ç®¡ç†å‘˜æƒé™ï¼Œå¼€å§‹èœå•/æ¡Œé¢æœ‰å¿«æ·æ–¹å¼ï¼‰ã€‚
-echo   æ•°æ®ä½ç½®ï¼šé»˜è®¤åœ¨ å¯åŠ¨ç›®å½•çš„ data\ ä¸‹ï¼›è‹¥å®‰è£…åœ¨ä¸å¯å†™ç›®å½•
-echo   ï¼ˆå¦‚ C:\Program Files\ï¼‰ï¼Œä¼šè‡ªåŠ¨æ”¹ç”¨ ç”¨æˆ·ä¸»ç›®å½•\.scoring-gui\ã€‚
-echo   å»ºè®®å®‰è£…å®Œåå…ˆæŒ‰ docs\GUIä½¿ç”¨è¯´æ˜.md å†’çƒŸä¸€æ¬¡ã€‚
+echo   ´ò°üÍê³É£º%DEST%\%APP_NAME%-%APP_VERSION%.exe £¨°²×°ÒıÇæ£©
+echo   ÍÆ¼ö½»¸¶£º%DEST%\%APP_NAME%-Setup-%APP_VERSION%.exe £¨°²×°Ïòµ¼¿Ç£©
+echo   Ïòµ¼¿Ç£ºË«»÷°²×°£¬Íê³Éºó¿É¹´Ñ¡É¾³ı°²×°°ü£»ÒÑ°²×°Ê±ÔÙË«»÷
+echo         Ìá¹© Æô¶¯/Ğ¶ÔØ/¹Ø±Õ ¹ÜÀíÒ³£¨Ğ¶ÔØ×ß±ê×¼ Windows Ïòµ¼£©¡£
+echo   °²×°ÒıÇæ½ö¹©ÖØ´ò°ü»òÌØÊâ³¡¾°£»·¢¸øÍ¬ÊÂÇëÓÃ Setup °æ¡£
+echo   Ë«»÷¼´×°£¨ÎŞĞè¹ÜÀíÔ±È¨ÏŞ£¬×ÀÃæ¿ì½İ·½Ê½£©¡£
+echo   Êı¾İÎ»ÖÃ£ºÄ¬ÈÏÔÚ Æô¶¯Ä¿Â¼µÄ data\ ÏÂ£»Èô°²×°ÔÚ²»¿ÉĞ´Ä¿Â¼
+echo   £¨Èç C:\Program Files\£©£¬»á×Ô¶¯¸ÄÓÃ ÓÃ»§Ö÷Ä¿Â¼\.scoring-gui\¡£
+echo   ½¨Òé°²×°ÍêºóÏÈ°´ docs\GUIÊ¹ÓÃËµÃ÷.md Ã°ÑÌÒ»´Î¡£
 echo ============================================================
 endlocal

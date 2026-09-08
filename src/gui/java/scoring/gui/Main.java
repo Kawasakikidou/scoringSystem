@@ -19,6 +19,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.Separator;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
+import javafx.scene.image.Image;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -133,6 +134,11 @@ public final class Main extends Application implements AppContext.Navigator {
         URL css = Main.class.getResource("app.css");
         if (css != null) {
             scene.getStylesheets().add(css.toExternalForm());
+        }
+        // 应用图标（app-icon.png 与 app.css 同目录随资源打包）
+        URL iconUrl = Main.class.getResource("app-icon.png");
+        if (iconUrl != null) {
+            primaryStage.getIcons().add(new Image(iconUrl.toExternalForm()));
         }
         primaryStage.setScene(scene);
         primaryStage.setTitle("学生组织面试评分系统");

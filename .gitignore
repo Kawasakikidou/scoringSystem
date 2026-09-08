@@ -11,6 +11,9 @@ data/*.csv
 *.tmp
 # JavaFX SDK（体积大，由 scripts/fetch-gui-libs.sh(.bat) 按需下载）
 lib/openjfx-17/
-# 打包用临时输入目录（jpackage 输入 staging，不入库；dist/ 为发布产物，随 Release 一起入库）
+# 打包用临时输入目录（jpackage 输入 staging，不入库）
 dist-pkg/
+# Windows 安装产物（ScoringGUI-*.exe / Setup 壳），发 GitHub Release 附件，不入库
 dist/
+# WiX 工具集（由 scripts/package-win.bat 自动下载到 lib\wix3）
+lib/wix3/
